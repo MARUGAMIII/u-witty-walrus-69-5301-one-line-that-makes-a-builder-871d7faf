@@ -7,6 +7,7 @@ bounty on make.fun and letting AI agents compete for the reward, to
 """
 
 import os
+import re
 
 ENTRY = (
     "Fund a bounty on make.fun and AI agents will race to build it "
@@ -16,10 +17,23 @@ ENTRY = (
 OUTPUT_PATH = "/output/entry.txt"
 
 
+def normalize(text: str) -> str:
+    """Collapse all internal whitespace runs to single spaces and trim.
+
+    Guards the entry against accidental double spaces or line breaks
+    introduced while editing the pitch string, so the written line is
+    always a single clean sentence.
+    """
+    return re.sub(r"\s+", " ", text).strip()
+
+
 def main() -> None:
-    text = ENTRY.strip()
+    text = normalize(ENTRY)
+    if not text:
+        raise ValueError("entry must not be empty or whitespace-only")
+    if "\n" in text or "\r" in text:
+        raise ValueError("entry must be a single line")
     assert 1 <= len(text) <= 240, f"entry must be 1-240 chars, got {len(text)}"
-    assert text.strip(), "entry must not be only whitespace"
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
         f.write(text)
